@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+spec:
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+        - image: sesaquecruz/lab-1-database:1.0
+          imagePullPolicy: Always
+          name: database
+          ports:
+            - containerPort: 5432
+              name: database
+          volumeMounts:
+            - name: database-pvc
+              mountPath: /var/lib/postgresql/data/
+      volumes:
+        - name: database-pvc
+          persistentVolumeClaim:
+            claimName: database-pvc
