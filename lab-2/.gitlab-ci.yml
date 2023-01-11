@@ -1,0 +1,40 @@
+stages:
+  - build_backend
+  - build_frontend
+  - create_images
+
+build_backend:
+  stage: build_backend
+  image: gradle:7.6.0-jdk17-alpine
+
+  script:
+    - gradle build -p backend/app/
+
+build_frontend:
+  stage: build_frontend
+  image: node:16.19.0-alpine3.17
+
+  script:
+    - npm install --prefix frontend/app/
+    - npm run build --prefix frontend/app/
+
+create_images:
+  stage: create_images
+  image: docker:23.0-rc-git
+
+  services:
+    - docker:23.0-rc-dind
+
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  
+  before_script:
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+  script:
+    - docker build database/. -t sesaquecruz/lab-2-database:1.0
+    - docker build backend/. -t sesaquecruz/lab-2-backend:1.0
+    - docker build frontend/. -t sesaquecruz/lab-2-frontend:1.0
+    - docker push sesaquecruz/lab-2-database:1.0
+    - docker push sesaquecruz/lab-2-backend:1.0
+    - docker push sesaquecruz/lab-2-frontend:1.0
